@@ -14,7 +14,7 @@ namespace travel_agency_system.Models
             CanEditCatalog = true;
         }
 
-        public Admin (Guid id, string? email, string? passwordHash,bool canEditCatalog):base(id, email, passwordHash){
+        public Admin (string? email, string? passwordHash,bool canEditCatalog):base(email, passwordHash){
             this.CanEditCatalog=canEditCatalog;
         }
     }

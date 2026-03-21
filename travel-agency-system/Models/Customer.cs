@@ -13,7 +13,7 @@ namespace travel_agency_system.Models
             this.Balance = 0.0;
         }
 
-        public Customer(Guid id, string? email, string? passwordHash,double balance):base(id,email,passwordHash)
+        public Customer(string? email, string? passwordHash,double balance):base(email,passwordHash)
         {
             this.Balance = balance;
         }

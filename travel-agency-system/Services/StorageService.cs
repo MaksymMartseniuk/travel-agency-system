@@ -31,5 +31,9 @@ namespace travel_agency_system.Services
             return JsonSerializer.Deserialize<List<T>>(jsonString) ?? new List<T>();
         }
 
+        public string GetFileName<T>() {
+            return $"{typeof(T).Name}.json";
+        }
+
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using travel_agency_system.Services;
 
 namespace travel_agency_system.Views.Auth
 {
@@ -28,9 +29,47 @@ namespace travel_agency_system.Views.Auth
             this.NavigationService.Navigate(new LoginPage());
         }
 
-        private void BtnRegister_Click(object sender, RoutedEventArgs e)
+        private async void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            
+            string email = txtEmail.Text;
+            string password = txtPassword.Password;
+            string confirmPassword = txtConfirmPassword.Password;
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+            {
+                MessageBox.Show("Please fill in all fields.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (password != confirmPassword)
+            {
+                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            btnRegister.IsEnabled = false;
+
+            try
+            {
+                bool success = await UserManager.GetInstance.RegisterAsync(email, password);
+
+                if (success)
+                {
+                    MessageBox.Show("Registration successful! You can now log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    this.NavigationService.Navigate(new LoginPage());
+                }
+                else
+                {
+                    MessageBox.Show("Registration failed. This email might already be taken.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "System Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnRegister.IsEnabled = true;
+            }
+
+
         }
     }
 }

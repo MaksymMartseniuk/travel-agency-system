@@ -7,7 +7,7 @@ namespace travel_agency_system.Models
     public class User: Entity
     {
         public string? Email { get; set; }
-
+        
         public string? PasswordHash { get; set; }
 
         public User()
@@ -16,7 +16,7 @@ namespace travel_agency_system.Models
             PasswordHash = string.Empty;
         }
 
-        public User(Guid id,string? email, string? passwordHash):base(id)
+        public User(string? email, string? passwordHash):base()
         {
             Email = email;
             PasswordHash = passwordHash;

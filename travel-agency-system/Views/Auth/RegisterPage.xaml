@@ -38,6 +38,7 @@
                              Margin="0,0,0,25" />
 
                 <Button Content="SIGN UP" 
+                        Name="btnRegister"
                         Click="BtnRegister_Click"
                         Height="45"
                         Style="{StaticResource MaterialDesignRaisedButton}" 
