@@ -17,5 +17,9 @@ namespace travel_agency_system.Models
         {
             this.Balance = balance;
         }
+        public new bool IsValid()
+        {
+            return base.IsValid() && this.Balance >= 0.0;
+        }
     }
 }

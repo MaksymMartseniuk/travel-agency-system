@@ -37,5 +37,15 @@ namespace travel_agency_system.Models
             this.Next = ListHead;
             ListHead = this;
         }
+
+        public new bool IsValid()
+        {
+            bool isIdValid = base.IsValid();
+            return isIdValid &&
+                   !string.IsNullOrEmpty(Name) &&
+                   Price > 0 &&
+                   Duration.TotalMinutes > 0 &&
+                   StartDate > DateTime.MinValue;
+        }
     }
 }

@@ -18,6 +18,10 @@ namespace travel_agency_system.Models
         {
             this.Id = id;
         }
+        public bool IsValid()
+        {
+            return Id != Guid.Empty;
+        }
 
     }
 }

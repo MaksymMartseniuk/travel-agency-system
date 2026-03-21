@@ -23,5 +23,13 @@ namespace travel_agency_system.Models
             this.Amount = amount;
             this.TransactionDate = transactionDate;
         }
+
+        public new bool IsValid()
+        {
+            return base.IsValid()&&
+                   PayerId != Guid.Empty &&
+                   Amount > 0;
+
+        }
     }
 }

@@ -21,5 +21,12 @@ namespace travel_agency_system.Models
             Email = email;
             PasswordHash = passwordHash;
         }
+
+        public new bool IsValid()
+        {
+            return base.IsValid() &&
+                !string.IsNullOrEmpty(Email)&&
+                !string.IsNullOrEmpty(PasswordHash);
+        }
     }
 }
