@@ -47,5 +47,9 @@ namespace travel_agency_system.Models
                    Duration.TotalMinutes > 0 &&
                    StartDate > DateTime.MinValue;
         }
+        public override string GetInfo()
+        {
+            return $"Тур: {Name} | Ціна: {Price}$";
+        }
     }
 }

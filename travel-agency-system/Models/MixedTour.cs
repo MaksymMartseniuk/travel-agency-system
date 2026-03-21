@@ -19,5 +19,11 @@ namespace travel_agency_system.Models
             this.BeachType = beachType;
             this.HasGuide = hasGuide;
         }
+
+        public override string GetInfo()
+        {
+            string guideStr = HasGuide ? "Гід включений" : "Гіда немає";
+            return $"{base.GetInfo()} | Змішаний тур: {BeachType}, {guideStr}";
+        }
     }
 }

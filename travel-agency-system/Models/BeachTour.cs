@@ -17,5 +17,10 @@ namespace travel_agency_system.Models
         {
             this.BeachType = beachType;
         }
+
+        public override string GetInfo()
+        {
+            return $"{base.GetInfo()} | Пляж: {BeachType}";
+        }
     }
 }

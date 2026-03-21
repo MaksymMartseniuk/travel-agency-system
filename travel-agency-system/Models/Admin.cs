@@ -5,7 +5,7 @@ using System.Text;
 
 namespace travel_agency_system.Models
 {
-    public class Admin:User
+    public sealed class Admin:User
     {
         public bool CanEditCatalog { get; set; }
 

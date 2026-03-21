@@ -17,5 +17,11 @@ namespace travel_agency_system.Models
         {
             this.HasGuide = hasGuide;
         }
+
+        public override string GetInfo()
+        {
+            string guideStr = HasGuide ? "Гід включений" : "Гіда немає";
+            return $"{base.GetInfo()} | {guideStr}";
+        }
     }
 }
