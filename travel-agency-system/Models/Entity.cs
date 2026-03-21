@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using travel_agency_system.Interfaces;
 
 namespace travel_agency_system.Models
 {
@@ -17,5 +18,6 @@ namespace travel_agency_system.Models
         {
             this.Id = id;
         }
+
     }
 }
