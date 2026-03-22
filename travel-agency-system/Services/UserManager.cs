@@ -26,5 +26,20 @@ namespace travel_agency_system.Services
         public void Logout() => CurrentUser = null;
         public bool IsAdmin => CurrentUser is Admin;
         public bool IsLoggedIn => CurrentUser != null;
+
+        public async Task UpdateCustomerAsync(Customer updatedCustomer)
+        {
+            var storage = StorageService.GetInstance;
+            string fileName = storage.GetFileName<Customer>();
+
+            var customers = await storage.LoadFromFileAsync<Customer>(fileName);
+
+            var index = customers.FindIndex(c => c.Email == updatedCustomer.Email);
+            if (index != -1)
+            {
+                customers[index] = updatedCustomer;
+                await storage.SaveToFileAsync(fileName, customers);
+            }
+        }
     }
 }

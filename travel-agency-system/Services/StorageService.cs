@@ -55,10 +55,15 @@ namespace travel_agency_system.Services
                 if (!File.Exists(filePath)) return new List<T>();
 
                 string jsonString = await File.ReadAllTextAsync(filePath);
+                
                 return JsonSerializer.Deserialize<List<T>>(jsonString, _jsonOptions) ?? new List<T>();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Windows.MessageBox.Show($"Помилка читання файлу {fileName}:\n{ex.Message}",
+                                   "Json Error",
+                                   System.Windows.MessageBoxButton.OK,
+                                   System.Windows.MessageBoxImage.Error);
                 return new List<T>();
             }
         }

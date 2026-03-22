@@ -13,4 +13,10 @@
     <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\Customer.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

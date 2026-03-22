@@ -14,6 +14,7 @@ namespace travel_agency_system.Services
             string hashedInput = PasswordHasher.HashPassword(password);
             var admins = await _storage.LoadFromFileAsync<Admin>(_storage.GetFileName<Admin>());
             var customers = await _storage.LoadFromFileAsync<Customer>(_storage.GetFileName<Customer>());
+
             User? user = admins.FirstOrDefault(a => a.Email == email && a.PasswordHash == hashedInput)
                          ?? (User?)customers.FirstOrDefault(c => c.Email == email && c.PasswordHash == hashedInput);
             if (user != null)

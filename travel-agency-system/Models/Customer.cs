@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace travel_agency_system.Models
 {
     public class Customer:User
     {
-        public double Balance { get; set; }
+        [JsonInclude]
+        [JsonPropertyName("Balance")]
+        public double Balance { get; private set; }
 
+        [JsonConstructor]
         public Customer()
         {
             this.Balance = 0.0;

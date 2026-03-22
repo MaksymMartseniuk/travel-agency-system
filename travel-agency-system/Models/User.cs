@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace travel_agency_system.Models
 {
@@ -10,7 +11,9 @@ namespace travel_agency_system.Models
         
         public string? PasswordHash { get; set; }
         public DateTime RegDate { get; set; }
+        [JsonIgnore]
         public static User? ListHead;
+        [JsonIgnore]
         public User? Next { get; set; }
 
         public User()
@@ -27,8 +30,6 @@ namespace travel_agency_system.Models
             Email = email;
             PasswordHash = passwordHash;
             RegDate = DateTime.Now;
-            Next = ListHead;
-            ListHead = this;
         }
 
         public new bool IsValid()
