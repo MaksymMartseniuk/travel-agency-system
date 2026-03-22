@@ -22,6 +22,7 @@ namespace travel_agency_system.Models
         {
             return Id != Guid.Empty;
         }
+
         public virtual string GetInfo()
         {
             return $"{this.Id.ToString()}";

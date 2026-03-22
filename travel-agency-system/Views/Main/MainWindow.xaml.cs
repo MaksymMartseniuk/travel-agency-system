@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using travel_agency_system.Models;
+using travel_agency_system.Services;
 
 namespace travel_agency_system.Views.Main
 {
@@ -20,6 +22,21 @@ namespace travel_agency_system.Views.Main
         public MainWindow()
         {
             InitializeComponent();
+            LoadStartPage();
         }
-    }
+
+        private void LoadStartPage()
+        {
+            var user = UserManager.GetInstance.CurrentUser;
+
+            if (user is Admin)
+            {
+                MainFrame.Navigate(new AdminPage());
+            }
+            else
+            {
+                
+                MainFrame.Navigate(new CustomerCatalogPage());
+            }
+        }    }
 }

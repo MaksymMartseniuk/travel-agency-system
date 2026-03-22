@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using travel_agency_system.Services;
 
 namespace travel_agency_system.Models
 {
@@ -16,11 +17,11 @@ namespace travel_agency_system.Models
         {
             TransactionDate = DateTime.Now;
             Amount = 0.0;
-            PayerId = Guid.NewGuid();
+            PayerId = IdGenerator.Generate();
             PurchasedTours = new List<TravelPackage>();
         }
         public PaymentTransaction(Guid id, Guid payerId, double amount, DateTime transactionDate)
-            : base(id)
+            : base()
         {
             this.PayerId = payerId;
             this.Amount = amount;

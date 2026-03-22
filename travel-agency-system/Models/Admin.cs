@@ -17,5 +17,8 @@ namespace travel_agency_system.Models
         public Admin (string? email, string? passwordHash,bool canEditCatalog):base(email, passwordHash){
             this.CanEditCatalog=canEditCatalog;
         }
+
+        public override string GetRole() => "Admin";
+        public override string GetInfo() => base.GetInfo() + " [ADMIN]";
     }
 }

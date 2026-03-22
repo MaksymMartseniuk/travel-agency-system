@@ -14,11 +14,11 @@ using System.Windows.Shapes;
 namespace travel_agency_system.Views.Main
 {
     /// <summary>
-    /// Interaction logic for ToursListPage.xaml
+    /// Interaction logic for AdminPage.xaml
     /// </summary>
-    public partial class ToursListPage : Page
+    public partial class AdminPage : Page
     {
-        public ToursListPage()
+        public AdminPage()
         {
             InitializeComponent();
         }

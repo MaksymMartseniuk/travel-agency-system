@@ -4,6 +4,7 @@ using System.Text;
 
 namespace travel_agency_system.Models
 {
+    public enum TourActivity { Guide, Beach, Spa, Skiing }
     public class TravelPackage: Entity
     {
         public string? Name { get; set; }
@@ -12,30 +13,34 @@ namespace travel_agency_system.Models
         public TimeSpan Duration { get; set; }
         public DateTime StartDate { get; set; }
 
-        public static TravelPackage? ListHead;
-        public TravelPackage? Next { get; set; }
+        public List<TourActivity> Activities { get; set; } = new();
 
         public TravelPackage()
         {
-            AddToLinkedList();
+            this.Name = string.Empty;
+            this.Price = 0;
+            this.Description = string.Empty;
+            this.Duration = TimeSpan.Zero;
+            this.StartDate = DateTime.MinValue;
+            this.Activities = new();
+
         }
 
-        public TravelPackage(Guid id, string? name, double price, string? description, TimeSpan duration, DateTime startDate)
-            : base(id)
+        public TravelPackage(string? name, double price, string? description, TimeSpan duration, DateTime startDate)
+            : base()
         {
             this.Name = name;
             this.Price = price;
             this.Description = description;
             this.Duration = duration;
             this.StartDate = startDate;
-
-            AddToLinkedList();
+            this.Activities = new();
         }
 
-        private void AddToLinkedList()
+        public TravelPackage( string? name, double price, string? description, TimeSpan duration, DateTime startDate, List<TourActivity> activities)
+            : this(name, price, description, duration, startDate) 
         {
-            this.Next = ListHead;
-            ListHead = this;
+            this.Activities = activities ?? new();
         }
 
         public new bool IsValid()
@@ -47,9 +52,6 @@ namespace travel_agency_system.Models
                    Duration.TotalMinutes > 0 &&
                    StartDate > DateTime.MinValue;
         }
-        public override string GetInfo()
-        {
-            return $"Тур: {Name} | Ціна: {Price}$";
-        }
+        public override string GetInfo() => $"Тур: {Name} - {Price}$";
     }
 }
