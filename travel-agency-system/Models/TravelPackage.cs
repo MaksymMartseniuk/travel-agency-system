@@ -53,5 +53,17 @@ namespace travel_agency_system.Models
                    StartDate > DateTime.MinValue;
         }
         public override string GetInfo() => $"Тур: {Name} - {Price}$";
+
+        public void AddActivity(TourActivity activity)
+        {
+            if (Activities == null)
+            {
+                Activities = new List<TourActivity>();
+            }
+            if (!Activities.Contains(activity))
+            {
+                Activities.Add(activity);
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:local="clr-namespace:travel_agency_system.Views.Main"
       mc:Ignorable="d" 
-      d:DesignHeight="600" d:DesignWidth="800"
+      d:DesignHeight="600" d:DesignWidth="1000"
       Title="Tour Catalog">
 
     <Grid Background="{DynamicResource MaterialDesignPaper}">

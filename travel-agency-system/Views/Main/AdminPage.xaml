@@ -3,12 +3,81 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:local="clr-namespace:travel_agency_system.Views.Main"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="AdminPage">
+      d:DesignHeight="600" d:DesignWidth="1000"
+      Title="AdminPage" Loaded="Page_Loaded">
 
-    <Grid>
-        
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="30" MaxWidth="900" HorizontalAlignment="Center">
+
+                <TextBlock Text="Tour Management" 
+                           Style="{StaticResource MaterialDesignHeadline4TextBlock}" 
+                           Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                <materialDesign:Card Padding="20" UniformCornerRadius="10" Margin="0,0,0,30">
+                    <materialDesign:Card.Effect>
+                        <DropShadowEffect BlurRadius="15" Direction="270" RenderingBias="Quality" ShadowDepth="1" Opacity="0.2" Color="Black"/>
+                    </materialDesign:Card.Effect>
+
+                    <StackPanel>
+                        <TextBlock Text="Create New Tour" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
+
+                        <TextBox x:Name="TxtTourName" materialDesign:HintAssist.Hint="Tour Name" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Margin="0,5"/>
+                        <TextBox x:Name="TxtTourPrice" materialDesign:HintAssist.Hint="Price ($)" Style="{StaticResource MaterialDesignFloatingHintTextBox}" PreviewTextInput="NumberValidationTextBox" Margin="0,5"/>
+                        <TextBox x:Name="TxtDescription" materialDesign:HintAssist.Hint="Description" AcceptsReturn="True" MinHeight="60" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0,10"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <DatePicker x:Name="DateStart" materialDesign:HintAssist.Hint="Start Date" Style="{StaticResource MaterialDesignFloatingHintDatePicker}"/>
+                            <TextBox x:Name="TxtDuration" Grid.Column="2" materialDesign:HintAssist.Hint="Duration (days)" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+                        </Grid>
+
+                        <TextBlock Text="Services:" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,10,0,5"/>
+                        <WrapPanel x:Name="ActivitiesPanel">
+                            <CheckBox x:Name="ChkGuide" Content="Guide" Margin="5" />
+                            <CheckBox x:Name="ChkBeach" Content="Beach" Margin="5" />
+                            <CheckBox x:Name="ChkSpa" Content="SPA" Margin="5" />
+                            <CheckBox x:Name="ChkSkiing" Content="Skiing" Margin="5" />
+                        </WrapPanel>
+
+                        <Button x:Name="BtnCreateTour" Content="SAVE TOUR" Click="BtnCreateTour_Click" Margin="0,20,0,0" Style="{StaticResource MaterialDesignRaisedButton}"/>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <TextBlock Text="Existing Tours" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,10"/>
+
+                <materialDesign:Card UniformCornerRadius="10" Padding="10">
+                    <DataGrid x:Name="DgTours" 
+                              AutoGenerateColumns="False" 
+                              IsReadOnly="True" 
+                              CanUserAddRows="False"
+                              Height="300"
+                              SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0}$}" Width="80"/>
+                            <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="100"/>
+                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration.Days, StringFormat={}{0} days}" Width="100"/>
+                            <DataGridTemplateColumn Header="Activities" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Activities.Count, StringFormat={}{0} services}" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </materialDesign:Card>
+
+                <Button Style="{StaticResource MaterialDesignFlatButton}" Content="Logout" Click="BtnLogout_Click" Margin="0,30" Foreground="Gray"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>
