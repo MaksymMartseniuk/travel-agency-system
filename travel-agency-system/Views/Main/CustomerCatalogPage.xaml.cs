@@ -22,18 +22,7 @@ namespace travel_agency_system.Views.Main
         public CustomerCatalogPage()
         {
             InitializeComponent();
-            this.Loaded += (s, e) => {
-                var testData = new List<TravelPackage>
-        {
-            new MountainTour(Guid.NewGuid(), "Test Mountain", 500, "Desc", TimeSpan.FromDays(5), DateTime.Now, true),
-            new BeachTour(Guid.NewGuid(), "Test Beach", 300, "Desc", TimeSpan.FromDays(7), DateTime.Now, "Sandy")
-        };
-
-                ToursList.ItemsSource = testData;
-
-                // Перевірка в консолі: якщо виведе 0, значить дані не прийшли
-                Console.WriteLine($"Items count: {ToursList.Items.Count}");
-            };
+            
         }
     }
 }

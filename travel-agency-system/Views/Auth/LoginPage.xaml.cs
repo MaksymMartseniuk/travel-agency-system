@@ -20,6 +20,7 @@ namespace travel_agency_system.Views.Auth
     /// </summary>
     public partial class LoginPage : Page
     {
+        private readonly AuthService _authService = new AuthService();
         public LoginPage()
         {
             InitializeComponent();
@@ -32,7 +33,7 @@ namespace travel_agency_system.Views.Auth
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string email =txtEmail.Text;
+            string email =txtEmail.Text.Trim();
             string password=txtPassword.Password;
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
@@ -42,7 +43,7 @@ namespace travel_agency_system.Views.Auth
             btnLogin.IsEnabled = false;
             try
             {
-                bool isSuccess = await UserManager.GetInstance.LoginAsync(email, password);
+                bool isSuccess = await _authService.LoginAsync(email, password);
 
                 if (isSuccess)
                 {

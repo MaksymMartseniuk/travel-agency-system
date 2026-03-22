@@ -27,16 +27,22 @@ namespace travel_agency_system.Views.Main
 
         private void LoadStartPage()
         {
-            var user = UserManager.GetInstance.CurrentUser;
-
-            if (user is Admin)
+            var userManager = UserManager.GetInstance;
+            if (!userManager.IsLoggedIn)
+            {
+                return;
+            }
+            if (userManager.IsAdmin)
             {
                 MainFrame.Navigate(new AdminPage());
+                this.Title = "Travel Agency - Admin Panel";
             }
             else
             {
-                
                 MainFrame.Navigate(new CustomerCatalogPage());
+                this.Title = "Travel Agency - Tours Catalog";
             }
-        }    }
+        }    
+    }
+
 }

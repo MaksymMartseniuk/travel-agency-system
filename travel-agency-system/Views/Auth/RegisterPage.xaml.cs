@@ -19,6 +19,7 @@ namespace travel_agency_system.Views.Auth
     /// </summary>
     public partial class RegisterPage : Page
     {
+        private readonly AuthService _authService = new AuthService();
         public RegisterPage()
         {
             InitializeComponent();
@@ -48,7 +49,7 @@ namespace travel_agency_system.Views.Auth
 
             try
             {
-                bool success = await UserManager.GetInstance.RegisterAsync(email, password);
+                bool success = await _authService.RegisterAsync(email, password);
 
                 if (success)
                 {
