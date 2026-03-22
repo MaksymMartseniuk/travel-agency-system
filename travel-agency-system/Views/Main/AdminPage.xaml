@@ -5,9 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:local="clr-namespace:travel_agency_system.Views.Main"
+      xmlns:conv="clr-namespace:travel_agency_system.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="1000"
       Title="AdminPage" Loaded="Page_Loaded">
+
+    <Page.Resources>
+        <conv:ActivitiesToStringConverter x:Key="ActivitiesConverter"/>
+    </Page.Resources>
 
     <Grid Background="{DynamicResource MaterialDesignPaper}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -68,10 +73,13 @@
                             <DataGridTemplateColumn Header="Activities" Width="150">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Activities.Count, StringFormat={}{0} services}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Activities, Converter={StaticResource ActivitiesConverter}}" 
+                                                TextWrapping="Wrap" 
+                                                VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+
                         </DataGrid.Columns>
                     </DataGrid>
                 </materialDesign:Card>
