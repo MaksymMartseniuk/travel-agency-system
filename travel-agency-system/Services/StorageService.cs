@@ -55,7 +55,11 @@ namespace travel_agency_system.Services
                 if (!File.Exists(filePath)) return new List<T>();
 
                 string jsonString = await File.ReadAllTextAsync(filePath);
-                
+                if (string.IsNullOrWhiteSpace(jsonString))
+                {
+                    return new List<T>();
+                }
+
                 return JsonSerializer.Deserialize<List<T>>(jsonString, _jsonOptions) ?? new List<T>();
             }
             catch (Exception ex)
