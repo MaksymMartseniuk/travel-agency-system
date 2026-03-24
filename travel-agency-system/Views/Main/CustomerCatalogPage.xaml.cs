@@ -31,13 +31,30 @@ namespace travel_agency_system.Views.Main
 
         }
 
-        private void BtnHistory_Click(object sender, RoutedEventArgs e)
+        private async void BtnHistory_Click(object sender, RoutedEventArgs e)
         {
+            if (_currentCustomer == null) return;
+            TopUpPanel.Visibility = Visibility.Collapsed;
+            HistoryPanel.Visibility = Visibility.Visible;
+
+            try
+            {
+                var myTransactions = await _transactionManager.GetTransactionsByCustomerAsync(_currentCustomer.Id);
+                DgHistory.ItemsSource = myTransactions.OrderByDescending(t => t.TransactionDate).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading history: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            RootDialog.IsOpen = true;
 
         }
 
         private void BtnTopUp_Click(object sender, RoutedEventArgs e)
         {
+            HistoryPanel.Visibility = Visibility.Collapsed;
+            TopUpPanel.Visibility = Visibility.Visible;
             TxtTopUpAmount.Clear();
             RootDialog.IsOpen = true;
         }
@@ -93,7 +110,9 @@ namespace travel_agency_system.Views.Main
                 txtUserBalance.Text = $"Balance: {_currentCustomer?.Balance:F2}$";
             }
             catch (Exception ex) 
-            {   MessageBox.Show($"Помилка оновлення балансу: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error); }
+            {
+                MessageBox.Show($"Error updating balance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void BtnBookSelected_Click(object sender, RoutedEventArgs e)
