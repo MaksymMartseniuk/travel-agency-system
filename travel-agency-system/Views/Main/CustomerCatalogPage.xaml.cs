@@ -23,6 +23,7 @@ namespace travel_agency_system.Views.Main
     {
         private Customer? _currentCustomer;
         private readonly TourManager _tourManager = new TourManager();
+        private readonly TransactionManager _transactionManager = new TransactionManager();
         public CustomerCatalogPage()
         {
             InitializeComponent();
@@ -48,15 +49,12 @@ namespace travel_agency_system.Views.Main
 
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _currentCustomer = UserManager.GetInstance.CurrentUser as Customer;
+            var tours = await _tourManager.GetAllToursAsync();
+            DgTours.ItemsSource = tours;
             UpdateBalanceUI();
-        }
-
-        private void BtnBook_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private async void BtnConfirmTopUp_Click(object sender, RoutedEventArgs e)
@@ -69,17 +67,16 @@ namespace travel_agency_system.Views.Main
                     await UserManager.GetInstance.UpdateCustomerAsync(_currentCustomer);
                     UpdateBalanceUI();
                     
-
                     RootDialog.IsOpen = false;
 
-                    MessageBox.Show($"Рахунок успішно поповнено на {amount:F2}$!",
-                        "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Balance successfully topped up by {amount:F2}$!",
+                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else
             {
-                MessageBox.Show("Будь ласка, введіть коректну суму більшу за 0.",
-                    "Помилка вводу", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter a valid amount greater than 0.",
+                    "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -93,10 +90,48 @@ namespace travel_agency_system.Views.Main
         {
             try
             {
-                txtUserBalance.Text = $"Balance: {_currentCustomer.Balance:F2}$";
+                txtUserBalance.Text = $"Balance: {_currentCustomer?.Balance:F2}$";
             }
             catch (Exception ex) 
             {   MessageBox.Show($"Помилка оновлення балансу: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error); }
+        }
+
+        private async void BtnBookSelected_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentCustomer == null) return;
+            var selectedTour = DgTours.SelectedItem as TravelPackage;
+
+            if (selectedTour == null)
+            {
+                MessageBox.Show("Please select a tour from the table first.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show($"Do you want to book '{selectedTour.Name}' for {selectedTour.Price}$?",
+                                 "Confirm Booking", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    _currentCustomer.MakePurchase(selectedTour.Price);
+                    await _transactionManager.RecordTransactionAsync(_currentCustomer.Id, selectedTour);
+                    await UserManager.GetInstance.UpdateCustomerAsync(_currentCustomer);
+
+                    UpdateBalanceUI();
+
+                    MessageBox.Show($"Success! You have booked '{selectedTour.Name}'.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    MessageBox.Show(ex.Message, "Payment Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"System error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
         }
     }
 }

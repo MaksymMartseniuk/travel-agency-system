@@ -5,31 +5,29 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:local="clr-namespace:travel_agency_system.Views.Main"
+      xmlns:conv="clr-namespace:travel_agency_system.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="1000"
       Title="Tour Catalog" Loaded="Page_Loaded">
+
+    <Page.Resources>
+        <conv:ActivitiesToStringConverter x:Key="ActivitiesConverter"/>
+    </Page.Resources>
 
     <materialDesign:DialogHost x:Name="RootDialog" CloseOnClickAway="True">
 
         <materialDesign:DialogHost.DialogContent>
             <StackPanel Margin="30" Width="250">
                 <TextBlock Text="Top Up Balance" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-
                 <TextBox x:Name="TxtTopUpAmount" 
                          materialDesign:HintAssist.Hint="Enter amount ($)" 
                          Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
                          PreviewTextInput="NumberValidationTextBox"
                          FontSize="16" Margin="0,0,0,30"/>
-
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="CANCEL" 
-                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
-                            Style="{StaticResource MaterialDesignFlatButton}" 
-                            Margin="0,0,10,0" Foreground="Gray"/>
-
-                    <Button Content="CONFIRM" 
-                            Click="BtnConfirmTopUp_Click" 
-                            Style="{StaticResource MaterialDesignRaisedButton}"/>
+                    <Button Content="CANCEL" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
+                            Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,10,0" Foreground="Gray"/>
+                    <Button Content="CONFIRM" Click="BtnConfirmTopUp_Click" Style="{StaticResource MaterialDesignRaisedButton}"/>
                 </StackPanel>
             </StackPanel>
         </materialDesign:DialogHost.DialogContent>
@@ -38,38 +36,25 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <materialDesign:ColorZone Mode="PrimaryMid" materialDesign:ElevationAssist.Elevation="Dp3">
+            <materialDesign:ColorZone Mode="PrimaryMid" materialDesign:ElevationAssist.Elevation="Dp3" Grid.Row="0">
                 <Border Padding="16">
                     <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-
-                            <Button Style="{StaticResource MaterialDesignToolButton}" 
-                                    Click="BtnHistory_Click" 
-                                    ToolTip="Purchase History" 
-                                    Margin="0,0,15,0">
+                            <Button Style="{StaticResource MaterialDesignToolButton}" Click="BtnHistory_Click" ToolTip="Purchase History" Margin="0,0,15,0">
                                 <materialDesign:PackIcon Kind="History" Width="28" Height="28" Foreground="White"/>
                             </Button>
-
                             <materialDesign:PackIcon Kind="Wallet" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
                             <TextBlock x:Name="txtUserBalance" Text="Balance: 0.00$" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Foreground="White"/>
-
-                            <Button Style="{StaticResource MaterialDesignToolButton}" 
-                                    Click="BtnTopUp_Click" 
-                                    ToolTip="Top Up Balance" 
-                                    Margin="5,0,0,0">
+                            <Button Style="{StaticResource MaterialDesignToolButton}" Click="BtnTopUp_Click" ToolTip="Top Up Balance" Margin="5,0,0,0">
                                 <materialDesign:PackIcon Kind="PlusCircleOutline" Width="28" Height="28" Foreground="#81C784"/>
                             </Button>
-
-                            <Button Style="{StaticResource MaterialDesignToolButton}" 
-                                    Click="BtnLogout_Click" 
-                                    ToolTip="Logout" 
-                                    Margin="15,0,0,0">
+                            <Button Style="{StaticResource MaterialDesignToolButton}" Click="BtnLogout_Click" ToolTip="Logout" Margin="15,0,0,0">
                                 <materialDesign:PackIcon Kind="Logout" Width="28" Height="28" Foreground="White"/>
                             </Button>
                         </StackPanel>
-
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Compass" Width="32" Height="32" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBlock Text="AVAILABLE TOURS" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
@@ -78,55 +63,57 @@
                 </Border>
             </materialDesign:ColorZone>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10">
-                <ItemsControl x:Name="ToursList">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel HorizontalAlignment="Center"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+            <materialDesign:Card Grid.Row="1" Margin="20" UniformCornerRadius="10" materialDesign:ElevationAssist.Elevation="Dp2">
+                <DataGrid x:Name="DgTours" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True" 
+                          CanUserAddRows="False"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          materialDesign:DataGridAssist.CellPadding="13 8 8 8" 
+                          materialDesign:DataGridAssist.ColumnHeaderPadding="8">
 
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <materialDesign:Card Width="250" Margin="15" UniformCornerRadius="10" materialDesign:ElevationAssist.Elevation="Dp2">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="140"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" FontSize="15" FontWeight="Medium"/>
 
-                                    <Border Background="{DynamicResource PrimaryHueLightBrush}" Grid.Row="0">
-                                        <materialDesign:PackIcon Kind="ImageOutline" Width="50" Height="50" 
-                                                                 HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                                 Opacity="0.3"/>
-                                    </Border>
+                        <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0}$}" Width="90" FontWeight="Bold">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryHueMidBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                                    <StackPanel Grid.Row="1" Margin="15">
-                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding StartDate, StringFormat='{}Date: {0:dd.MM.yyyy}'}" Opacity="0.6" Margin="0,5"/>
+                        <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
 
-                                        <Separator Margin="0,10"/>
+                        <DataGridTextColumn Header="Duration" Binding="{Binding Duration.Days, StringFormat={}{0} days}" Width="100"/>
 
-                                        <DockPanel>
-                                            <TextBlock Text="{Binding Price, StringFormat='{}{0}$'}" FontSize="20" 
-                                                       FontWeight="Black" Foreground="{DynamicResource SecondaryHueMidBrush}" 
-                                                       VerticalAlignment="Center"/>
+                        <DataGridTemplateColumn Header="Activities" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Activities, Converter={StaticResource ActivitiesConverter}}" 
+                                               TextWrapping="Wrap" 
+                                               VerticalAlignment="Center"
+                                               FontSize="12"
+                                               Opacity="0.8"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                                            <Button Content="BOOK" 
-                                                    Click="BtnBook_Click"
-                                                    HorizontalAlignment="Right" 
-                                                    Style="{StaticResource MaterialDesignRaisedSecondaryButton}" 
-                                                    Height="32" 
-                                                    MinWidth="80"
-                                                    Tag="{Binding Id}"/>
-                                        </DockPanel>
-                                    </StackPanel>
-                                </Grid>
-                            </materialDesign:Card>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </materialDesign:Card>
+
+            <Button Grid.Row="2" 
+                    x:Name="BtnBookSelected"
+                    Content="BOOK SELECTED TOUR" 
+                    Margin="20,0,20,20" 
+                    Height="50"
+                    Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                    Click="BtnBookSelected_Click"
+                    materialDesign:ButtonAssist.CornerRadius="10"/>
+
         </Grid>
     </materialDesign:DialogHost>
 </Page>
