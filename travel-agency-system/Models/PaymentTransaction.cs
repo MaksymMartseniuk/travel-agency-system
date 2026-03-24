@@ -9,6 +9,7 @@ namespace travel_agency_system.Models
     public class PaymentTransaction: Entity
     {
         public Guid PayerId { get; set; }
+        [JsonInclude]
         public double Amount { get; private set; }
         public DateTime TransactionDate { get; set; }
 

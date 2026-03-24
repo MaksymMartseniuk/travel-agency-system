@@ -17,19 +17,57 @@
     <materialDesign:DialogHost x:Name="RootDialog" CloseOnClickAway="True">
 
         <materialDesign:DialogHost.DialogContent>
-            <StackPanel Margin="30" Width="250">
-                <TextBlock Text="Top Up Balance" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-                <TextBox x:Name="TxtTopUpAmount" 
-                         materialDesign:HintAssist.Hint="Enter amount ($)" 
-                         Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
-                         PreviewTextInput="NumberValidationTextBox"
-                         FontSize="16" Margin="0,0,0,30"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="CANCEL" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
-                            Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,10,0" Foreground="Gray"/>
-                    <Button Content="CONFIRM" Click="BtnConfirmTopUp_Click" Style="{StaticResource MaterialDesignRaisedButton}"/>
+            <Grid Margin="20">
+
+                <StackPanel x:Name="TopUpPanel" Width="250" Visibility="Collapsed">
+                    <TextBlock Text="Top Up Balance" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="TxtTopUpAmount" 
+                             materialDesign:HintAssist.Hint="Enter amount ($)" 
+                             Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                             PreviewTextInput="NumberValidationTextBox"
+                             FontSize="16" Margin="0,0,0,30"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="CANCEL" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
+                                Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,10,0" Foreground="Gray"/>
+                        <Button Content="CONFIRM" Click="BtnConfirmTopUp_Click" Style="{StaticResource MaterialDesignRaisedButton}"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
+
+                <Grid x:Name="HistoryPanel" Width="550" Height="400" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="My Purchase History" FontSize="20" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+                    <DataGrid x:Name="DgHistory" Grid.Row="1"
+                              AutoGenerateColumns="False" 
+                              IsReadOnly="True" 
+                              CanUserAddRows="False"
+                              SelectionMode="Single"
+                              materialDesign:DataGridAssist.CellPadding="13 8 8 8" 
+                              materialDesign:DataGridAssist.ColumnHeaderPadding="8">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding TransactionDate, StringFormat=\{0:dd.MM.yyyy HH:mm\}}" Width="140" FontWeight="Medium"/>
+                            <DataGridTextColumn Header="Total Amount" Binding="{Binding Amount, StringFormat={}{0:F2}$}" Width="120" FontWeight="Bold">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryHueMidBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Tours Count" Binding="{Binding PurchasedTours.Count, StringFormat={}{0} tour(s)}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Button Grid.Row="2" Content="CLOSE" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
+                            Margin="0,15,0,0" HorizontalAlignment="Center" Style="{StaticResource MaterialDesignFlatButton}" Width="100"/>
+                </Grid>
+
+            </Grid>
         </materialDesign:DialogHost.DialogContent>
 
         <Grid Background="{DynamicResource MaterialDesignPaper}">
@@ -72,10 +110,8 @@
                           SelectionUnit="FullRow"
                           materialDesign:DataGridAssist.CellPadding="13 8 8 8" 
                           materialDesign:DataGridAssist.ColumnHeaderPadding="8">
-
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" FontSize="15" FontWeight="Medium"/>
-
                         <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0}$}" Width="90" FontWeight="Bold">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
@@ -84,36 +120,23 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-
                         <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
-
                         <DataGridTextColumn Header="Duration" Binding="{Binding Duration.Days, StringFormat={}{0} days}" Width="100"/>
-
                         <DataGridTemplateColumn Header="Activities" Width="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Activities, Converter={StaticResource ActivitiesConverter}}" 
-                                               TextWrapping="Wrap" 
-                                               VerticalAlignment="Center"
-                                               FontSize="12"
-                                               Opacity="0.8"/>
+                                               TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Opacity="0.8"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
                     </DataGrid.Columns>
                 </DataGrid>
             </materialDesign:Card>
 
-            <Button Grid.Row="2" 
-                    x:Name="BtnBookSelected"
-                    Content="BOOK SELECTED TOUR" 
-                    Margin="20,0,20,20" 
-                    Height="50"
-                    Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
-                    Click="BtnBookSelected_Click"
-                    materialDesign:ButtonAssist.CornerRadius="10"/>
-
+            <Button Grid.Row="2" x:Name="BtnBookSelected" Content="BOOK SELECTED TOUR" 
+                    Margin="20,0,20,20" Height="50" Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                    Click="BtnBookSelected_Click" materialDesign:ButtonAssist.CornerRadius="10"/>
         </Grid>
     </materialDesign:DialogHost>
 </Page>
