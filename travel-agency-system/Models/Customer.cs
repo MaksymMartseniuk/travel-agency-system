@@ -21,13 +21,10 @@ namespace travel_agency_system.Models
         {
             this.Balance = balance;
         }
-        public new bool IsValid()
+        public override bool IsValid()
         {
             return base.IsValid() && this.Balance >= 0.0;
         }
-
-        public override string GetRole() => "Customer";
-        public override string GetInfo() => base.GetInfo() + $" | Balance: {Balance}$";
         public void TopUp(double amount) { if (amount > 0) Balance += amount; }
         public bool CanAfford(double price) => Balance >= price;
 

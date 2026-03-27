@@ -1,28 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.IO;
+using travel_agency_system.Interfaces;
 
 namespace travel_agency_system.Models
 {
-    public class User: Entity
+    public class User: Entity, ISearchable
     {
         public string? Email { get; set; }
         
         public string? PasswordHash { get; set; }
         public DateTime RegDate { get; set; }
-        [JsonIgnore]
-        public static User? ListHead;
-        [JsonIgnore]
-        public User? Next { get; set; }
 
         public User()
         {
             Email = string.Empty;
             PasswordHash = string.Empty;
             RegDate = DateTime.Now;
-            Next = ListHead;
-            ListHead = this;
         }
 
         public User(string? email, string? passwordHash):base()
@@ -32,13 +29,17 @@ namespace travel_agency_system.Models
             RegDate = DateTime.Now;
         }
 
-        public new bool IsValid()
+        public override bool IsValid()
         {
             return base.IsValid() &&
                 !string.IsNullOrEmpty(Email)&&
                 !string.IsNullOrEmpty(PasswordHash);
         }
-        public virtual string GetRole() => "Base User";
-        public override string GetInfo() => $"User: {Email}";
+
+        public bool Matches(string searchQuery)
+        {
+            if (string.IsNullOrWhiteSpace(searchQuery)) return true;
+            return this.Email!=null && this.Email.Contains(searchQuery,StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

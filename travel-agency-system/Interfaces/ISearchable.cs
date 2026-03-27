@@ -4,8 +4,8 @@ using System.Text;
 
 namespace travel_agency_system.Interfaces
 {
-    public interface IEntity
+    public interface ISearchable
     {
-        public bool Search(string searchString);
+        bool Matches(string searchQuery);
     }
 }

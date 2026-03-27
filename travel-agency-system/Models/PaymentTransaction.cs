@@ -45,7 +45,7 @@ namespace travel_agency_system.Models
             }
         }
 
-        public new bool IsValid()
+        public override bool IsValid()
         {
             return base.IsValid()&&
                    PayerId != Guid.Empty &&
@@ -53,10 +53,6 @@ namespace travel_agency_system.Models
                    _purchasedTours != null &&
                    _purchasedTours.Count > 0;
 
-        }
-        public sealed override string GetInfo()
-        {
-            return $"[ТРАНЗАКЦІЯ] Сума: {Amount}$ | Турів: {PurchasedTours.Count} | Дата: {TransactionDate.ToShortDateString()}";
         }
     }
 }

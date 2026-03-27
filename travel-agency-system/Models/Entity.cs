@@ -18,14 +18,10 @@ namespace travel_agency_system.Models
         {
             this.Id = id;
         }
-        public bool IsValid()
+        public virtual bool IsValid()
         {
             return Id != Guid.Empty;
         }
 
-        public virtual string GetInfo()
-        {
-            return $"{this.Id.ToString()}";
-        }
     }
 }

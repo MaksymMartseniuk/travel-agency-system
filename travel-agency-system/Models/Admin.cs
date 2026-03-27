@@ -19,7 +19,6 @@ namespace travel_agency_system.Models
             this.CanEditCatalog=canEditCatalog;
         }
 
-        public override string GetRole() => "Admin";
-        public override string GetInfo() => base.GetInfo() + " [ADMIN]";
+        
     }
 }

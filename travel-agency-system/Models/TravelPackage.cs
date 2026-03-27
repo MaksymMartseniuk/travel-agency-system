@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using travel_agency_system.Interfaces;
 
 namespace travel_agency_system.Models
 {
     public enum TourActivity { Guide, Beach, Spa, Skiing }
-    public class TravelPackage: Entity
+    public class TravelPackage: Entity, ISearchable
     {
         public string? Name { get; set; }
         public double Price { get; set; }
@@ -43,7 +44,7 @@ namespace travel_agency_system.Models
             this.Activities = activities ?? new();
         }
 
-        public new bool IsValid()
+        public override bool IsValid()
         {
             bool isIdValid = base.IsValid();
             return isIdValid &&
@@ -52,7 +53,6 @@ namespace travel_agency_system.Models
                    Duration.TotalMinutes > 0 &&
                    StartDate > DateTime.MinValue;
         }
-        public override string GetInfo() => $"Тур: {Name} - {Price}$";
 
         public void AddActivity(TourActivity activity)
         {
@@ -64,6 +64,15 @@ namespace travel_agency_system.Models
             {
                 Activities.Add(activity);
             }
+        }
+
+        public bool Matches(string searchQuery)
+        {
+            if (string.IsNullOrWhiteSpace(searchQuery)) { return true; }
+
+            return(this.Name!=null && this.Name.Contains(searchQuery,StringComparison.OrdinalIgnoreCase))||
+                (Description != null && Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))||
+                (this.Price.ToString().Contains(searchQuery));
         }
     }
 }

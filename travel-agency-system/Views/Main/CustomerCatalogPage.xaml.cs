@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,11 +25,17 @@ namespace travel_agency_system.Views.Main
         private Customer? _currentCustomer;
         private readonly TourManager _tourManager = new TourManager();
         private readonly TransactionManager _transactionManager = new TransactionManager();
+        private readonly DataSearchEngine<TravelPackage> _searchEngine = new();
+        private  List<TravelPackage> _allToursCache = new();
+
         public CustomerCatalogPage()
         {
             InitializeComponent();
             _currentCustomer = UserManager.GetInstance.CurrentUser as Customer;
-
+            _searchEngine.OnSearchCompleted += (filteredTours) =>
+            {
+                DgTours.ItemsSource = filteredTours;
+            };
         }
 
         private async void BtnHistory_Click(object sender, RoutedEventArgs e)
@@ -48,7 +55,6 @@ namespace travel_agency_system.Views.Main
             }
 
             RootDialog.IsOpen = true;
-
         }
 
         private void BtnTopUp_Click(object sender, RoutedEventArgs e)
@@ -63,32 +69,32 @@ namespace travel_agency_system.Views.Main
         {
             UserManager.GetInstance.Logout();
             Window.GetWindow(this)?.Close();
-
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _currentCustomer = UserManager.GetInstance.CurrentUser as Customer;
-            var tours = await _tourManager.GetAllToursAsync();
-            DgTours.ItemsSource = tours;
+
+            _allToursCache = await _tourManager.GetAllToursAsync();
+            DgTours.ItemsSource = _allToursCache;
+
             UpdateBalanceUI();
         }
 
         private async void BtnConfirmTopUp_Click(object sender, RoutedEventArgs e)
         {
+            if (_currentCustomer == null) return;
+
             if (double.TryParse(TxtTopUpAmount.Text, out double amount) && amount > 0)
             {
-                if (_currentCustomer != null)
-                {
-                    _currentCustomer.TopUp(amount);
-                    await UserManager.GetInstance.UpdateCustomerAsync(_currentCustomer);
-                    UpdateBalanceUI();
-                    
-                    RootDialog.IsOpen = false;
+                _currentCustomer.TopUp(amount);
+                await UserManager.GetInstance.UpdateCustomerAsync(_currentCustomer);
+                UpdateBalanceUI();
 
-                    MessageBox.Show($"Balance successfully topped up by {amount:F2}$!",
-                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                RootDialog.IsOpen = false;
+
+                MessageBox.Show($"Balance successfully topped up by {amount:F2}$!",
+                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -109,7 +115,7 @@ namespace travel_agency_system.Views.Main
             {
                 txtUserBalance.Text = $"Balance: {_currentCustomer?.Balance:F2}$";
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show($"Error updating balance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -138,6 +144,8 @@ namespace travel_agency_system.Views.Main
                     await UserManager.GetInstance.UpdateCustomerAsync(_currentCustomer);
 
                     UpdateBalanceUI();
+                    _allToursCache = await _tourManager.GetAllToursAsync();
+                    TxtSearch_TextChanged(this, null);
 
                     MessageBox.Show($"Success! You have booked '{selectedTour.Name}'.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -150,7 +158,12 @@ namespace travel_agency_system.Views.Main
                     MessageBox.Show($"System error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
 
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs? e)
+        {
+            string query = TxtSearch?.Text?.Trim() ?? string.Empty;
+            _searchEngine.Search(_allToursCache, query);
         }
     }
 }
