@@ -14,6 +14,8 @@ using System.Windows.Shapes;
 using travel_agency_system.Models;
 using travel_agency_system.Services;
 using System.Text.RegularExpressions;
+using travel_agency_system.Interfaces;
+using System.Xml.Serialization;
 
 namespace travel_agency_system.Views.Main
 {
@@ -26,16 +28,46 @@ namespace travel_agency_system.Views.Main
         private readonly TourManager _tourManager = new TourManager();
         private readonly TransactionManager _transactionManager = new TransactionManager();
         private readonly DataSearchEngine<TravelPackage> _searchEngine = new();
+        private readonly ITourFilterService _tourFilterService= new TourFilterService();
         private  List<TravelPackage> _allToursCache = new();
+
+        private bool _isMasking = false;
 
         public CustomerCatalogPage()
         {
             InitializeComponent();
             _currentCustomer = UserManager.GetInstance.CurrentUser as Customer;
-            _searchEngine.OnSearchCompleted += (filteredTours) =>
+
+            _tourFilterService.OnFilterCompleted += (filteredTours) =>
             {
-                DgTours.ItemsSource = filteredTours;
+                string query = TxtSearch?.Text?.Trim() ?? string.Empty;
+                _searchEngine.Search(filteredTours, query);
             };
+
+            _searchEngine.OnSearchCompleted += (finalTours) =>
+            {
+                DgTours.ItemsSource = finalTours;
+            };
+        }
+
+        private void ApplyFiltersAndSearch()
+        {
+            if (_allToursCache == null || !_allToursCache.Any()) return;
+            FilterCategory selectedCategory = CmbFilterCategory != null ? (FilterCategory)CmbFilterCategory.SelectedIndex : FilterCategory.All;
+            SortOrder selectedOrder = CmbSortOrder != null ? (SortOrder)CmbSortOrder.SelectedIndex : SortOrder.Ascending;
+
+            string? minVal = TxtMinValue?.Text?.Trim();
+            string? maxVal = TxtMaxValue?.Text?.Trim();
+
+            var options = new TourFilterOptions
+            {
+                Category = selectedCategory,
+                Order = selectedOrder,
+                MinValue = string.IsNullOrEmpty(minVal) ? null : minVal,
+                MaxValue = string.IsNullOrEmpty(maxVal) ? null : maxVal
+            };
+
+            _tourFilterService.ApplyFilters(_allToursCache, options);
         }
 
         private async void BtnHistory_Click(object sender, RoutedEventArgs e)
@@ -77,7 +109,7 @@ namespace travel_agency_system.Views.Main
 
             _allToursCache = await _tourManager.GetAllToursAsync();
             DgTours.ItemsSource = _allToursCache;
-
+            ApplyFiltersAndSearch();
             UpdateBalanceUI();
         }
 
@@ -145,7 +177,7 @@ namespace travel_agency_system.Views.Main
 
                     UpdateBalanceUI();
                     _allToursCache = await _tourManager.GetAllToursAsync();
-                    TxtSearch_TextChanged(this, null);
+                    ApplyFiltersAndSearch();
 
                     MessageBox.Show($"Success! You have booked '{selectedTour.Name}'.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -162,8 +194,73 @@ namespace travel_agency_system.Views.Main
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs? e)
         {
-            string query = TxtSearch?.Text?.Trim() ?? string.Empty;
-            _searchEngine.Search(_allToursCache, query);
+            ApplyFiltersAndSearch();
+        }
+
+        private void FilterText_Changed(object sender, TextChangedEventArgs e)
+        {
+            if (CmbFilterCategory?.SelectedIndex == (int)FilterCategory.Date && sender is TextBox tb)
+            {
+                ApplyDateMasking(tb);
+            }
+            ApplyFiltersAndSearch();
+        }
+
+        private void Filter_Changed(object sender, SelectionChangedEventArgs e)
+        {
+
+            if (CmbFilterCategory != null && TxtMinValue!=null && TxtMaxValue!=null) 
+            {
+                TxtMaxValue.TextChanged -= FilterText_Changed;
+                TxtMinValue.TextChanged -= FilterText_Changed;
+
+                TxtMinValue.Clear();
+                TxtMaxValue.Clear();
+                TxtMaxValue.IsEnabled = true;
+                TxtMinValue.IsEnabled = true;
+                if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Date)
+                {
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "dd.mm.yyyy");
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "dd.mm.yyyy");
+                }
+                else if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Price)
+                {
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Price");
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Price");
+                }
+                else
+                {
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Value");
+                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Value");
+                    TxtMaxValue.IsEnabled = false;
+                    TxtMinValue.IsEnabled = false;
+                }
+                TxtMinValue.TextChanged += FilterText_Changed;
+                TxtMaxValue.TextChanged += FilterText_Changed;
+            }
+            ApplyFiltersAndSearch();
+        }
+
+        private void ApplyDateMasking(TextBox tb)
+        {
+            if (_isMasking) return;
+            _isMasking = true;
+            string rawText = tb.Text.Replace(".", "");
+            rawText = new string(rawText.Where(char.IsDigit).ToArray());
+
+            if (rawText.Length > 8) rawText = rawText.Substring(0, 8);
+
+            string maskedText = "";
+            for (int i = 0; i < rawText.Length; i++)
+            {
+                if (i == 2 || i == 4) maskedText += ".";
+                maskedText += rawText[i];
+            }
+
+            tb.Text = maskedText;
+            tb.CaretIndex = maskedText.Length;
+
+            _isMasking = false;
         }
     }
 }

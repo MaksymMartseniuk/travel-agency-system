@@ -6,6 +6,11 @@ using travel_agency_system.Interfaces;
 namespace travel_agency_system.Models
 {
     public enum TourActivity { Guide, Beach, Spa, Skiing }
+
+    public enum FilterCategory {All, Price, Date }
+
+    public enum SortOrder { Ascending, Descending }
+
     public class TravelPackage: Entity, ISearchable
     {
         public string? Name { get; set; }
@@ -70,9 +75,8 @@ namespace travel_agency_system.Models
         {
             if (string.IsNullOrWhiteSpace(searchQuery)) { return true; }
 
-            return(this.Name!=null && this.Name.Contains(searchQuery,StringComparison.OrdinalIgnoreCase))||
-                (Description != null && Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))||
-                (this.Price.ToString().Contains(searchQuery));
+            return (this.Name != null && this.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) ||
+                (Description != null && Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

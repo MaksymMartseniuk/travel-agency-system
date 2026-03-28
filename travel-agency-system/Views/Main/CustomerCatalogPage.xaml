@@ -97,7 +97,7 @@
                             <materialDesign:PackIcon Kind="Compass" Width="32" Height="32" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBlock Text="AVAILABLE TOURS" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
                         </StackPanel>
-                        
+
                     </DockPanel>
                 </Border>
             </materialDesign:ColorZone>
@@ -117,8 +117,32 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="FilterOutline" Width="22" Height="22" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBlock Text="Filters will appear here..." Foreground="Gray" VerticalAlignment="Center" FontStyle="Italic" FontSize="14"/>
+                                <materialDesign:PackIcon Kind="FilterOutline" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                                <ComboBox x:Name="CmbFilterCategory" Width="90" Margin="0,0,10,0"
+                                          materialDesign:HintAssist.Hint="Filter By"
+                                          SelectionChanged="Filter_Changed">
+                                    <ComboBoxItem Content="All" IsSelected="True"/>
+                                    <ComboBoxItem Content="Price"/>
+                                    <ComboBoxItem Content="Date"/>
+                                </ComboBox>
+
+                                <TextBox x:Name="TxtMinValue" Width="70" Margin="0,0,10,0"
+                                         materialDesign:HintAssist.Hint="From"
+                                         TextChanged="FilterText_Changed"/>
+
+                                <TextBox x:Name="TxtMaxValue" Width="70" Margin="0,0,15,0"
+                                         materialDesign:HintAssist.Hint="To"
+                                         TextChanged="FilterText_Changed"/>
+
+                                <materialDesign:PackIcon Kind="Sort" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+
+                                <ComboBox x:Name="CmbSortOrder" Width="100" Margin="0,0,10,0"
+                                          materialDesign:HintAssist.Hint="Sort Order"
+                                          SelectionChanged="Filter_Changed">
+                                    <ComboBoxItem Content="Ascending" IsSelected="True"/>
+                                    <ComboBoxItem Content="Descending"/>
+                                </ComboBox>
                             </StackPanel>
 
                             <Border Grid.Column="1" Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="8,4,8,4" Width="260" materialDesign:ElevationAssist.Elevation="Dp1">
@@ -131,27 +155,27 @@
                                     <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,8,0"/>
 
                                     <TextBox x:Name="TxtSearch"
-                                 Grid.Column="1"
-                                 FontSize="15"
-                                 VerticalAlignment="Center"
-                                 materialDesign:HintAssist.Hint="Search by name, desc, price..."
-                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                 BorderThickness="0"
-                                 TextChanged="TxtSearch_TextChanged"/>
+                                             Grid.Column="1"
+                                             FontSize="15"
+                                             VerticalAlignment="Center"
+                                             materialDesign:HintAssist.Hint="Search by name, desc, price..."
+                                             materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                             BorderThickness="0"
+                                             TextChanged="TxtSearch_TextChanged"/>
                                 </Grid>
                             </Border>
                         </Grid>
                     </Border>
 
                     <DataGrid x:Name="DgTours" Grid.Row="1"
-                  AutoGenerateColumns="False" 
-                  IsReadOnly="True" 
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  SelectionUnit="FullRow"
-                  materialDesign:DataGridAssist.CellPadding="13 8 8 8" 
-                  materialDesign:DataGridAssist.ColumnHeaderPadding="8"
-                  BorderThickness="0">
+                              AutoGenerateColumns="False" 
+                              IsReadOnly="True" 
+                              CanUserAddRows="False"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              materialDesign:DataGridAssist.CellPadding="13 8 8 8" 
+                              materialDesign:DataGridAssist.ColumnHeaderPadding="8"
+                              BorderThickness="0">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" FontSize="15" FontWeight="Medium"/>
                             <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0}$}" Width="90" FontWeight="Bold">
@@ -168,7 +192,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Activities, Converter={StaticResource ActivitiesConverter}}" 
-                                       TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Opacity="0.8"/>
+                                                   TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Opacity="0.8"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
