@@ -6,7 +6,7 @@ using travel_agency_system.Services;
 
 namespace travel_agency_system.Models
 {
-    public abstract class Entity
+    public abstract class Entity:IEntity
     {
         public Guid Id { get; set; }
         public Entity ()

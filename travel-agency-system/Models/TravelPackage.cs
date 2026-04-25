@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using travel_agency_system.Interfaces;
 
 namespace travel_agency_system.Models
@@ -11,7 +12,7 @@ namespace travel_agency_system.Models
 
     public enum SortOrder { Ascending, Descending }
 
-    public class TravelPackage: Entity, ISearchable
+    public class TravelPackage: Entity, ISearchable,IFilterable<TourFilterOptions>, ISortable<TravelPackage, TourFilterOptions>
     {
         public string? Name { get; set; }
         public double Price { get; set; }
@@ -77,6 +78,42 @@ namespace travel_agency_system.Models
 
             return (this.Name != null && this.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) ||
                 (Description != null && Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
+
+
+        public bool IsMatch(TourFilterOptions options)
+        {
+            if (options.Category == FilterCategory.Price)
+            {
+                if (double.TryParse(options.MinValue, out double min) && Price < min) return false;
+                if (double.TryParse(options.MaxValue, out double max) && Price > max) return false;
+            }
+
+            if (options.Category == FilterCategory.Date || !string.IsNullOrEmpty(options.MinValue) || !string.IsNullOrEmpty(options.MaxValue))
+            {
+                if (DateTime.TryParse(options.MinValue, out DateTime minDate) && StartDate.Date < minDate.Date)
+                    return false;
+
+                if (DateTime.TryParse(options.MaxValue, out DateTime maxDate))
+                {
+                    var endDate = StartDate.Add(Duration).Date;
+                    if (endDate > maxDate.Date) return false;
+                }
+            }
+
+            return true;
+        }
+
+        public IEnumerable<TravelPackage> ApplySort(IEnumerable<TravelPackage> items, TourFilterOptions options)
+        {
+            return (options.Category, options.Order) switch
+            {
+                (FilterCategory.Price, SortOrder.Ascending) => items.OrderBy(t => t.Price),
+                (FilterCategory.Price, SortOrder.Descending) => items.OrderByDescending(t => t.Price),
+                (FilterCategory.Date, SortOrder.Ascending) => items.OrderBy(t => t.StartDate),
+                (FilterCategory.Date, SortOrder.Descending) => items.OrderByDescending(t => t.StartDate),
+                _ => items
+            };
         }
     }
 }

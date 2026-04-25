@@ -5,10 +5,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
 using System.Threading.Tasks;
+using travel_agency_system.Interfaces;
 
 namespace travel_agency_system.Services
 {
-    public sealed class StorageService
+    public sealed class StorageService:IStorageService
     {
         private static StorageService? _instance;
         private static readonly object _lock = new object();
@@ -34,7 +35,7 @@ namespace travel_agency_system.Services
             get { lock (_lock) return _instance ??= new StorageService(); }
         }
 
-        public async Task SaveToFileAsync<T>(string fileName, List<T> data)
+        public async Task SaveToFileAsync<T>(string fileName, List<T> data) where T: class , IEntity, new()
         {
             try
             {
@@ -47,7 +48,7 @@ namespace travel_agency_system.Services
                 throw new IOException($"Помилка збереження у файл {fileName}: {ex.Message}");
             }
         }
-        public async Task<List<T>> LoadFromFileAsync<T>(string fileName)
+        public async Task<List<T>> LoadFromFileAsync<T>(string fileName) where T : class, IEntity, new()
         {
             try
             {
@@ -72,7 +73,8 @@ namespace travel_agency_system.Services
             }
         }
 
-        public string GetFileName<T>() {
+        public string GetFileName<T>() where T : class, IEntity, new()
+        {
             return $"{typeof(T).Name}.json";
         }
 

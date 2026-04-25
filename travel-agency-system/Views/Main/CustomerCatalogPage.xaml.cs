@@ -27,8 +27,7 @@ namespace travel_agency_system.Views.Main
         private Customer? _currentCustomer;
         private readonly TourManager _tourManager = new TourManager();
         private readonly TransactionManager _transactionManager = new TransactionManager();
-        private readonly DataSearchEngine<TravelPackage> _searchEngine = new();
-        private readonly ITourFilterService _tourFilterService= new TourFilterService();
+        private readonly IDataManager<TravelPackage, TourFilterOptions> _dataCoordinator = new DataManager<TravelPackage, TourFilterOptions>();
         private  List<TravelPackage> _allToursCache = new();
 
         private bool _isMasking = false;
@@ -38,38 +37,32 @@ namespace travel_agency_system.Views.Main
             InitializeComponent();
             _currentCustomer = UserManager.GetInstance.CurrentUser as Customer;
 
-            _tourFilterService.OnFilterCompleted += (filteredTours) =>
+            _dataCoordinator.OnDataProcessed += (results) =>
             {
-                string query = TxtSearch?.Text?.Trim() ?? string.Empty;
-                _searchEngine.Search(filteredTours, query);
-            };
 
-            _searchEngine.OnSearchCompleted += (finalTours) =>
-            {
-                DgTours.ItemsSource = finalTours;
+                DgTours.ItemsSource = results.ToList();
             };
         }
 
-        private void ApplyFiltersAndSearch()
+        private async void ApplyFiltersAndSearch()
         {
             if (_allToursCache == null || !_allToursCache.Any()) return;
-            FilterCategory selectedCategory = CmbFilterCategory != null ? (FilterCategory)CmbFilterCategory.SelectedIndex : FilterCategory.All;
-            SortOrder selectedOrder = CmbSortOrder != null ? (SortOrder)CmbSortOrder.SelectedIndex : SortOrder.Ascending;
 
-            string? minVal = TxtMinValue?.Text?.Trim();
-            string? maxVal = TxtMaxValue?.Text?.Trim();
+            var options = GetCurrentOptions();
+            string query = TxtSearch?.Text?.Trim() ?? string.Empty;
 
-            var options = new TourFilterOptions
-            {
-                Category = selectedCategory,
-                Order = selectedOrder,
-                MinValue = string.IsNullOrEmpty(minVal) ? null : minVal,
-                MaxValue = string.IsNullOrEmpty(maxVal) ? null : maxVal
-            };
-
-            _tourFilterService.ApplyFilters(_allToursCache, options);
+            await _dataCoordinator.ProcessAsync(_allToursCache, query, options);
         }
-
+        private TourFilterOptions GetCurrentOptions()
+        {
+            return new TourFilterOptions
+            {
+                Category = CmbFilterCategory != null ? (FilterCategory)CmbFilterCategory.SelectedIndex : FilterCategory.All,
+                Order = CmbSortOrder != null ? (SortOrder)CmbSortOrder.SelectedIndex : SortOrder.Ascending,
+                MinValue = string.IsNullOrEmpty(TxtMinValue?.Text) ? null : TxtMinValue.Text.Trim(),
+                MaxValue = string.IsNullOrEmpty(TxtMaxValue?.Text) ? null : TxtMaxValue.Text.Trim()
+            };
+        }
         private async void BtnHistory_Click(object sender, RoutedEventArgs e)
         {
             if (_currentCustomer == null) return;
@@ -109,6 +102,7 @@ namespace travel_agency_system.Views.Main
 
             _allToursCache = await _tourManager.GetAllToursAsync();
             DgTours.ItemsSource = _allToursCache;
+            UpdateFilterInputsState();
             ApplyFiltersAndSearch();
             UpdateBalanceUI();
         }
@@ -208,35 +202,9 @@ namespace travel_agency_system.Views.Main
 
         private void Filter_Changed(object sender, SelectionChangedEventArgs e)
         {
-
-            if (CmbFilterCategory != null && TxtMinValue!=null && TxtMaxValue!=null) 
+            if (sender == CmbFilterCategory)
             {
-                TxtMaxValue.TextChanged -= FilterText_Changed;
-                TxtMinValue.TextChanged -= FilterText_Changed;
-
-                TxtMinValue.Clear();
-                TxtMaxValue.Clear();
-                TxtMaxValue.IsEnabled = true;
-                TxtMinValue.IsEnabled = true;
-                if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Date)
-                {
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "dd.mm.yyyy");
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "dd.mm.yyyy");
-                }
-                else if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Price)
-                {
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Price");
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Price");
-                }
-                else
-                {
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Value");
-                    MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Value");
-                    TxtMaxValue.IsEnabled = false;
-                    TxtMinValue.IsEnabled = false;
-                }
-                TxtMinValue.TextChanged += FilterText_Changed;
-                TxtMaxValue.TextChanged += FilterText_Changed;
+                UpdateFilterInputsState();
             }
             ApplyFiltersAndSearch();
         }
@@ -261,6 +229,38 @@ namespace travel_agency_system.Views.Main
             tb.CaretIndex = maskedText.Length;
 
             _isMasking = false;
+        }
+
+        private void UpdateFilterInputsState()
+        {
+            if (CmbFilterCategory == null || TxtMinValue == null || TxtMaxValue == null) return;
+            TxtMaxValue.TextChanged -= FilterText_Changed;
+            TxtMinValue.TextChanged -= FilterText_Changed;
+
+            TxtMinValue.Clear();
+            TxtMaxValue.Clear();
+            TxtMaxValue.IsEnabled = true;
+            TxtMinValue.IsEnabled = true;
+
+            if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Date)
+            {
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "dd.mm.yyyy");
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "dd.mm.yyyy");
+            }
+            else if (CmbFilterCategory.SelectedIndex == (int)FilterCategory.Price)
+            {
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Price");
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Price");
+            }
+            else
+            {
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMinValue, "Min Value");
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(TxtMaxValue, "Max Value");
+                TxtMaxValue.IsEnabled = false;
+                TxtMinValue.IsEnabled = false;
+            }
+            TxtMinValue.TextChanged += FilterText_Changed;
+            TxtMaxValue.TextChanged += FilterText_Changed;
         }
     }
 }
