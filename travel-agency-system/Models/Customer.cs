@@ -9,9 +9,15 @@ namespace travel_agency_system.Models
 {
     public class Customer:User
     {
+        private decimal _balance;
+
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Balance { get; private set; }
+        public decimal Balance
+        {
+            get => _balance;
+            private set => _balance = value;
+        }
 
         public virtual ICollection<PaymentTransaction> Transactions { get; set; } = new List<PaymentTransaction>();
         public Customer()

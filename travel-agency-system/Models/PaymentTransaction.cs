@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
-using System.Text.Json.Serialization;
-using travel_agency_system.Services;
 
 namespace travel_agency_system.Models
 {
@@ -13,11 +11,18 @@ namespace travel_agency_system.Models
     {
         [Required]
         public Guid PayerId { get; set; }
-        [ForeignKey("PayerId")]
+
+        [ForeignKey(nameof(PayerId))]
         public virtual Customer? Payer { get; set; }
+        private decimal _amount;
+
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Amount { get; private set; }
+        public decimal Amount
+        {
+            get => _amount;
+            private set => _amount = value;
+        }
         [Required]
         public DateTime TransactionDate { get; set; }
 
