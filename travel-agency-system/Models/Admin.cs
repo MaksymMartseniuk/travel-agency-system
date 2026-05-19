@@ -8,6 +8,7 @@ namespace travel_agency_system.Models
 {
     public sealed class Admin:User
     {
+        [Required]
         public bool CanEditCatalog { get; set; }
 
         public Admin()

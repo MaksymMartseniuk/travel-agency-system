@@ -1,58 +1,57 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using System.Text.Json.Serialization;
 using travel_agency_system.Services;
 
 namespace travel_agency_system.Models
 {
+    [Table("Transactions")]
     public class PaymentTransaction: Entity
     {
+        [Required]
         public Guid PayerId { get; set; }
-        [JsonInclude]
-        public double Amount { get; private set; }
+        [ForeignKey("PayerId")]
+        public virtual Customer? Payer { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Amount { get; private set; }
+        [Required]
         public DateTime TransactionDate { get; set; }
 
-        [JsonInclude]
-        [JsonPropertyName("PurchasedTours")]
-        private List<TravelPackage> _purchasedTours;
-
-        [JsonIgnore]
-        public IReadOnlyList<TravelPackage> PurchasedTours => _purchasedTours.AsReadOnly();
+        public virtual ICollection<TravelPackage> PurchasedTours { get; set; } = new List<TravelPackage>();
 
         public PaymentTransaction()
         {
             TransactionDate = DateTime.Now;
-            Amount = 0.0;
+            Amount = 0.0m;
             PayerId = Guid.Empty;
-            _purchasedTours = new List<TravelPackage>();
         }
-        public PaymentTransaction(Guid payerId)
-            : base()
+        public PaymentTransaction(Guid payerId) : base()
         {
             this.PayerId = payerId;
-            this.Amount = 0.0;
+            this.Amount = 0.0m;
             this.TransactionDate = DateTime.Now;
-            _purchasedTours = new List<TravelPackage>();
         }
 
         public void AddTour(TravelPackage tour)
         {
             if (tour != null)
             {
-                _purchasedTours.Add(tour);
-                Amount += tour.Price;
+                PurchasedTours.Add(tour);
+                Amount += (decimal)tour.Price;
             }
         }
 
         public override bool IsValid()
         {
-            return base.IsValid()&&
+            return base.IsValid() &&
                    PayerId != Guid.Empty &&
                    Amount > 0 &&
-                   _purchasedTours != null &&
-                   _purchasedTours.Count > 0;
-
+                   PurchasedTours != null &&
+                   PurchasedTours.Count > 0;
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text;
 using travel_agency_system.Interfaces;
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace travel_agency_system.Models
 {
     public enum TourActivity { Guide, Beach, Spa, Skiing }
@@ -11,21 +13,30 @@ namespace travel_agency_system.Models
     public enum FilterCategory {All, Price, Date }
 
     public enum SortOrder { Ascending, Descending }
-
+    [Table("TravelPackages")]
     public class TravelPackage: Entity, ISearchable,IFilterable<TourFilterOptions>, ISortable<TravelPackage, TourFilterOptions>
     {
+        [Required]
+        [MaxLength(150)]
         public string? Name { get; set; }
-        public double Price { get; set; }
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Price { get; set; }
+        [MaxLength(1000)]
         public string? Description { get; set; }= null;
+        [Required]
         public TimeSpan Duration { get; set; }
+        [Required]
         public DateTime StartDate { get; set; }
 
         public List<TourActivity> Activities { get; set; } = new();
 
+        public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+
         public TravelPackage()
         {
             this.Name = string.Empty;
-            this.Price = 0;
+            this.Price = 0m;
             this.Description = string.Empty;
             this.Duration = TimeSpan.Zero;
             this.StartDate = DateTime.MinValue;
@@ -37,7 +48,7 @@ namespace travel_agency_system.Models
             : base()
         {
             this.Name = name;
-            this.Price = price;
+            this.Price = (decimal)price;
             this.Description = description;
             this.Duration = duration;
             this.StartDate = startDate;
@@ -76,8 +87,7 @@ namespace travel_agency_system.Models
         {
             if (string.IsNullOrWhiteSpace(searchQuery)) { return true; }
 
-            return (this.Name != null && this.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) ||
-                (Description != null && Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+            return new[] { Name, Description }.Any(prop => prop?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false);
         }
 
 
@@ -85,8 +95,8 @@ namespace travel_agency_system.Models
         {
             if (options.Category == FilterCategory.Price)
             {
-                if (double.TryParse(options.MinValue, out double min) && Price < min) return false;
-                if (double.TryParse(options.MaxValue, out double max) && Price > max) return false;
+                if (decimal.TryParse(options.MinValue, out decimal min) && Price < min) return false;
+                if (decimal.TryParse(options.MaxValue, out decimal max) && Price > max) return false;
             }
 
             if (options.Category == FilterCategory.Date || !string.IsNullOrEmpty(options.MinValue) || !string.IsNullOrEmpty(options.MaxValue))
@@ -108,11 +118,11 @@ namespace travel_agency_system.Models
         {
             return (options.Category, options.Order) switch
             {
-                (FilterCategory.Price, SortOrder.Ascending) => items.OrderBy(t => t.Price),
-                (FilterCategory.Price, SortOrder.Descending) => items.OrderByDescending(t => t.Price),
-                (FilterCategory.Date, SortOrder.Ascending) => items.OrderBy(t => t.StartDate),
-                (FilterCategory.Date, SortOrder.Descending) => items.OrderByDescending(t => t.StartDate),
-                _ => items
+                (FilterCategory.Price, SortOrder.Ascending) => items.OrderBy(t => t.Price).ThenBy(t => t.StartDate),
+                (FilterCategory.Price, SortOrder.Descending) => items.OrderByDescending(t => t.Price).ThenByDescending(t => t.StartDate),
+                (FilterCategory.Date, SortOrder.Ascending) => items.OrderBy(t => t.StartDate).ThenBy(t => t.Name),
+                (FilterCategory.Date, SortOrder.Descending) => items.OrderByDescending(t => t.StartDate).ThenByDescending(t => t.Name),
+                _ => items.OrderBy(t => t.Name).ThenBy(t => t.Price)
             };
         }
     }

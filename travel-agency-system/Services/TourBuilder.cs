@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using travel_agency_system.Interfaces;
@@ -23,6 +23,8 @@ namespace travel_agency_system.Services
 
         public TravelPackage Build()
         {
+            if (_tour == null)
+                throw new InvalidOperationException("TourBuilder: tour is not initialized. Call SetBaseInfo and SetTiming first.");
             var result = _tour;
             _tour = new TravelPackage();
             return result;
@@ -30,9 +32,12 @@ namespace travel_agency_system.Services
 
         public ITourBuilder SetBaseInfo(string name, double price, string description)
         {
-            _tour?.Name=name;
-            _tour?.Price=price;
-            _tour?.Description=description;
+            if (_tour != null)
+            {
+                _tour.Name = name;
+                _tour.Price = (decimal)price;
+                _tour.Description = description;
+            }
             return this;
         }
 

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using travel_agency_system.Interfaces;
 using travel_agency_system.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace travel_agency_system.Models
 {
     public abstract class Entity:IEntity
     {
+        [Key]
         public Guid Id { get; set; }
         public Entity ()
         {
