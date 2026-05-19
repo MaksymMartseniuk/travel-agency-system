@@ -12,7 +12,12 @@ namespace travel_agency_system.Services
         public async Task ProcessAsync(IEnumerable<T> source, string searchQuery, TOptions options)
         {
             var processedData = await Task.Run(() => {
-                var filtered = GetProcessedSequence(source, searchQuery, options).ToList();
+                var filtered = source.Where(item =>
+                    item != null &&
+                    item.IsValid() &&
+                    item.Matches(searchQuery) &&
+                    item.IsMatch(options)
+                );
                 var sorted = new T();
                 return sorted.ApplySort(filtered, options).ToList();
 
@@ -22,15 +27,5 @@ namespace travel_agency_system.Services
             OnDataProcessed?.Invoke(processedData);
         }
 
-        private IEnumerable<T> GetProcessedSequence(IEnumerable<T> source, string query, TOptions options)
-        {
-            foreach (var item in source)
-            {
-                if (item != null && item.IsValid() && item.IsMatch(options) && item.Matches(query))
-                {
-                    yield return item;
-                }
-            }
-        }
     }
 }

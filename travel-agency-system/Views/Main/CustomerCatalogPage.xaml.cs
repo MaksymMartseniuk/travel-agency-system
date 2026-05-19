@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,11 +15,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Serialization;
+using travel_agency_system.Extensions;
+using travel_agency_system.Interfaces;
 using travel_agency_system.Models;
 using travel_agency_system.Services;
-using System.Text.RegularExpressions;
-using travel_agency_system.Interfaces;
-using System.Xml.Serialization;
+using System.Text.Json.Serialization;
 
 namespace travel_agency_system.Views.Main
 {
@@ -30,6 +35,11 @@ namespace travel_agency_system.Views.Main
         private readonly IDataManager<TravelPackage, TourFilterOptions> _dataCoordinator = new DataManager<TravelPackage, TourFilterOptions>();
         private  List<TravelPackage> _allToursCache = new();
 
+        private int _currentPage = 1;
+        private int _pageSize = 5;
+        private List<TravelPackage> _currentFilteredTours = new();
+
+
         private bool _isMasking = false;
 
         public CustomerCatalogPage()
@@ -39,8 +49,12 @@ namespace travel_agency_system.Views.Main
 
             _dataCoordinator.OnDataProcessed += (results) =>
             {
-
-                DgTours.ItemsSource = results.ToList();
+                Dispatcher.Invoke(() =>
+                {
+                    _currentFilteredTours = results.ToList();
+                    _currentPage = 1;
+                    UpdatePaginationAndStatsUI();
+                });
             };
         }
 
@@ -150,11 +164,27 @@ namespace travel_agency_system.Views.Main
         private async void BtnBookSelected_Click(object sender, RoutedEventArgs e)
         {
             if (_currentCustomer == null) return;
-            var selectedTour = DgTours.SelectedItem as TravelPackage;
+            var selectedItem = DgTours.SelectedItem;
 
-            if (selectedTour == null)
+            if (selectedItem == null)
             {
                 MessageBox.Show("Please select a tour from the table first.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            Guid searchId = Guid.Empty;
+            if (selectedItem is DTOs.TravelPackageFullDto fullDto)
+            {
+                searchId = fullDto.Id;
+            }
+            else if (selectedItem is DTOs.TravelPackageCompactDto compactDto)
+            {
+                searchId = compactDto.Id;
+            }
+
+            var selectedTour = _allToursCache.FirstOrDefault(t => t.Id == searchId);
+            if (selectedTour == null)
+            {
+                MessageBox.Show("System error: Could not find original tour details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -184,6 +214,7 @@ namespace travel_agency_system.Views.Main
                     MessageBox.Show($"System error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs? e)
@@ -261,6 +292,104 @@ namespace travel_agency_system.Views.Main
             }
             TxtMinValue.TextChanged += FilterText_Changed;
             TxtMaxValue.TextChanged += FilterText_Changed;
+        }
+
+        private void ViewMode_Changed(object sender, RoutedEventArgs e)
+        {
+            ApplyFiltersAndSearch();
+        }
+
+        private async void BtnCompare_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog
+            {
+                Title = "Select External Tours Source",
+                Filter = "JSON Files (*.json)|*.json"
+            };
+
+            if(fileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    List<TravelPackage> externalSourceTours = new List<TravelPackage>();
+                    string jsonString = File.ReadAllText(fileDialog.FileName);
+                    var options = new JsonSerializerOptions
+                    {
+                        Converters = { new JsonStringEnumConverter() },
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var loadedData = JsonSerializer.Deserialize<List<TravelPackage>>(jsonString, options);
+                    if (loadedData != null) externalSourceTours = loadedData;
+                    var currentTourIds = _allToursCache.Select(t => t.Id);
+                    var uniqueNewTours = externalSourceTours.ExceptBy(currentTourIds, t => t.Id).ToList();
+                    var combinedTours = _allToursCache
+                        .Concat(uniqueNewTours)
+                        .OrderBy(t => t.Name)
+                        .ThenByDescending(t => t.StartDate)
+                        .ToList();
+                    _allToursCache = combinedTours;
+                    await _tourManager.SaveAllToursAsync(_allToursCache);
+                    ApplyFiltersAndSearch();
+                    MessageBox.Show($"LINQ Set Operations completed!\n\n" +
+                                    $"Tours in file: {externalSourceTours.Count}\n" +
+                                    $"Duplicates ignored: {externalSourceTours.Count - uniqueNewTours.Count}\n" +
+                                    $"New unique tours added: {uniqueNewTours.Count}",
+                                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentFilteredTours.Count > _currentPage * _pageSize)
+            {
+                _currentPage++;
+                UpdatePaginationAndStatsUI();
+            }
+        }
+
+        private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage > 1)
+            {
+                _currentPage--;
+                UpdatePaginationAndStatsUI();
+            }
+        }
+
+        private void UpdatePaginationAndStatsUI()
+        {
+            if (!_currentFilteredTours.Any())
+            {
+                DgTours.ItemsSource = null;
+                TxtPageNumber.Text = "0";
+                TxtTotalCount.Text = "0";
+                TxtAvgPrice.Text = "0.00 $";
+                BtnPrevPage.IsEnabled = false;
+                BtnNextPage.IsEnabled = false;
+                return;
+            }
+            var stats = _currentFilteredTours.GetStatistics();
+            TxtTotalCount.Text = stats.TotalCount.ToString();
+            TxtAvgPrice.Text = stats.AveragePrice;
+            var paginatedTours = _currentFilteredTours.Paginate(_currentPage, _pageSize).ToList();
+
+            if (ChkCompactView?.IsChecked == true)
+            {
+                DgTours.ItemsSource = paginatedTours.ToCompactView().ToList();
+            }
+            else
+            {
+                DgTours.ItemsSource = paginatedTours.ToFullView().ToList();
+            }
+
+            TxtPageNumber.Text = _currentPage.ToString();
+            BtnPrevPage.IsEnabled = _currentPage > 1;
+            BtnNextPage.IsEnabled = _currentFilteredTours.Count > _currentPage * _pageSize;
         }
     }
 }

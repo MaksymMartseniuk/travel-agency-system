@@ -5,20 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:local="clr-namespace:travel_agency_system.Views.Main"
-      xmlns:conv="clr-namespace:travel_agency_system.Converters"
       mc:Ignorable="d" 
-      d:DesignHeight="600" d:DesignWidth="1000"
+      d:DesignHeight="700" d:DesignWidth="1000"
       Title="Tour Catalog" Loaded="Page_Loaded">
-
-    <Page.Resources>
-        <conv:ActivitiesToStringConverter x:Key="ActivitiesConverter"/>
-    </Page.Resources>
 
     <materialDesign:DialogHost x:Name="RootDialog" CloseOnClickAway="True">
 
         <materialDesign:DialogHost.DialogContent>
             <Grid Margin="20">
-
                 <StackPanel x:Name="TopUpPanel" Width="250" Visibility="Collapsed">
                     <TextBlock Text="Top Up Balance" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
                     <TextBox x:Name="TxtTopUpAmount" 
@@ -66,7 +60,6 @@
                     <Button Grid.Row="2" Content="CLOSE" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
                             Margin="0,15,0,0" HorizontalAlignment="Center" Style="{StaticResource MaterialDesignFlatButton}" Width="100"/>
                 </Grid>
-
             </Grid>
         </materialDesign:DialogHost.DialogContent>
 
@@ -97,7 +90,6 @@
                             <materialDesign:PackIcon Kind="Compass" Width="32" Height="32" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBlock Text="AVAILABLE TOURS" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
                         </StackPanel>
-
                     </DockPanel>
                 </Border>
             </materialDesign:ColorZone>
@@ -107,6 +99,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1" Padding="15,10,15,10" Background="#F8F9FA">
@@ -145,30 +138,40 @@
                                 </ComboBox>
                             </StackPanel>
 
-                            <Border Grid.Column="1" Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="8,4,8,4" Width="260" materialDesign:ElevationAssist.Elevation="Dp1">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox x:Name="ChkCompactView" 
+                                          Content="Compact View" 
+                                          Margin="0,0,15,0" 
+                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                          ToolTip="Use LINQ .Select() to show only essential properties"
+                                          Checked="ViewMode_Changed" 
+                                          Unchecked="ViewMode_Changed"/>
 
-                                    <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,8,0"/>
+                                <Border Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="8,4,8,4" Width="260" materialDesign:ElevationAssist.Elevation="Dp1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <TextBox x:Name="TxtSearch"
-                                             Grid.Column="1"
-                                             FontSize="15"
-                                             VerticalAlignment="Center"
-                                             materialDesign:HintAssist.Hint="Search by name, desc..."
-                                             materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                             BorderThickness="0"
-                                             TextChanged="TxtSearch_TextChanged"/>
-                                </Grid>
-                            </Border>
+                                        <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,8,0"/>
+
+                                        <TextBox x:Name="TxtSearch"
+                                                 Grid.Column="1"
+                                                 FontSize="15"
+                                                 VerticalAlignment="Center"
+                                                 materialDesign:HintAssist.Hint="Search by name, desc..."
+                                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                                 BorderThickness="0"
+                                                 TextChanged="TxtSearch_TextChanged"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </Grid>
                     </Border>
 
                     <DataGrid x:Name="DgTours" Grid.Row="1"
-                              AutoGenerateColumns="False" 
+                              AutoGenerateColumns="True" 
                               IsReadOnly="True" 
                               CanUserAddRows="False"
                               SelectionMode="Single"
@@ -177,27 +180,35 @@
                               materialDesign:DataGridAssist.ColumnHeaderPadding="8"
                               BorderThickness="0">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" FontSize="15" FontWeight="Medium"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0}$}" Width="90" FontWeight="Bold">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryHueMidBrush}"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="110"/>
-                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration.Days, StringFormat={}{0} days}" Width="100"/>
-                            <DataGridTemplateColumn Header="Activities" Width="180">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Activities, Converter={StaticResource ActivitiesConverter}}" 
-                                                   TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Opacity="0.8"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <Border Grid.Row="2" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,1,0,0" Padding="15,10" Background="#F8F9FA">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="Total Results:" FontWeight="Medium" Foreground="Gray" Margin="0,0,5,0"/>
+                                <TextBlock x:Name="TxtTotalCount" Text="0" FontWeight="Bold" Margin="0,0,15,0"/>
+
+                                <TextBlock Text="Avg Price:" FontWeight="Medium" Foreground="Gray" Margin="0,0,5,0"/>
+                                <TextBlock x:Name="TxtAvgPrice" Text="0.00 $" FontWeight="Bold"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Button x:Name="BtnPrevPage" Content="PREV" Click="BtnPrevPage_Click" 
+                                        Style="{StaticResource MaterialDesignOutlinedButton}" Height="32" Padding="10,0" Margin="0,0,10,0"/>
+
+                                <Border Background="{DynamicResource PrimaryHueLightBrush}" CornerRadius="4" Padding="15,0" Height="32">
+                                    <TextBlock x:Name="TxtPageNumber" Text="1" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <Button x:Name="BtnNextPage" Content="NEXT" Click="BtnNextPage_Click" 
+                                        Style="{StaticResource MaterialDesignOutlinedButton}" Height="32" Padding="10,0" Margin="10,0,0,0"/>
+                            </StackPanel>
+
+                            <Button HorizontalAlignment="Right" Content="COMPARE SOURCES" Style="{StaticResource MaterialDesignFlatButton}" 
+                                    Click="BtnCompare_Click" ToolTip="LINQ Set Operations (Intersect/Except)"/>
+                        </Grid>
+                    </Border>
                 </Grid>
             </materialDesign:Card>
 

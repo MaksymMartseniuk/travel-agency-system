@@ -5,14 +5,22 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
 using travel_agency_system.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace travel_agency_system.Models
 {
+    [Table("Users")]
     public class User: Entity, ISearchable
     {
+        [Required]
+        [MaxLength(255)]
+        [EmailAddress]
         public string? Email { get; set; }
-        
+        [Required]
+        [MaxLength(255)]
         public string? PasswordHash { get; set; }
+        [Required]
         public DateTime RegDate { get; set; }
 
         public User()

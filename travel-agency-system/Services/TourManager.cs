@@ -1,24 +1,38 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Security.RightsManagement;
 using System.Text;
 using travel_agency_system.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace travel_agency_system.Services
 {
     public class TourManager
     {
-        private readonly StorageService _storage = StorageService.GetInstance;
-
         public async Task<List<TravelPackage>> GetAllToursAsync()
         {
-            return await _storage.LoadFromFileAsync<TravelPackage>(_storage.GetFileName<TravelPackage>());
+            using (var context = new AppDbContext())
+            {
+                return await context.TravelPackages.ToListAsync();
+            }
         }
 
         public async Task AddTourAsync(TravelPackage newTour)
         {
-            var tours = await GetAllToursAsync();
-            tours.Add(newTour);
-            await _storage.SaveToFileAsync(_storage.GetFileName<TravelPackage>(), tours);
+            using (var context = new AppDbContext())
+            {
+                context.TravelPackages.Add(newTour);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task SaveAllToursAsync(List<TravelPackage> tours)
+        {
+            using (var context = new AppDbContext())
+            {
+                context.TravelPackages.UpdateRange(tours);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
